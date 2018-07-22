@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zyf.ssm.mapper.AdminMapper" >
+<!-- 查询全部社团信息 -->
+<select id="getAllAssociationInfo"  parameterType="map" resultType="java.util.HashMap">
+		  			SELECT * FROM  
+			(  
+			SELECT A.*, ROWNUM RN  
+			FROM (
+					
+				     
+     select association_name,
+            realname,
+            a.main_master main_master,
+            phone,email,
+            (case gender when 0 then '男' when 1 then '女' else '男' end) gender,
+            (case association_type
+              when 0 then
+               '学术社团'
+              when 1 then
+               '非学术社团'
+            end) association_type,
+            nvl(file_name, 0) file_name,
+            nvl(file_url, 0) file_url,
+            to_char(start_time, 'yyyy-MM-dd') start_time,
+            institute_name,
+            a.id association_id
+     
+       from association_info a, files_info f, institute_info i, userinfo u
+      where a.id = f.parent_id(+)
+        and a.main_master = u.student_id(+)
+        and a.institute_id = i.id(+)
+        and valid_flag = '0'
+        and u.usertype = '1'
+		
+			 <if test="association_type != 'all'">
+   					 AND association_type=to_number(#{association_type})
+  			</if>
+  			 <if test="institute_id != 'all'">
+   					 AND a.institute_id=#{institute_id}
+  			</if>
+  			<if test="association_name != 'all'">
+   					 AND association_name like'%'||#{association_name}||'%'
+  			</if>
+			<![CDATA[	) A  
+			WHERE ROWNUM <= to_number(#{page}) * to_number(#{limit}) 
+			)  
+			WHERE RN >=(to_number(#{page})-1)*to_number(#{limit}) +1  
+			 ]]>
+</select>
+<!-- 查询数量 -->
+<select id="getAllAssociationCount"   parameterType="map"  resultType="String">
+select count(*) 
+  from  association_info a, files_info f, institute_info i, userinfo u
+      where a.id = f.parent_id(+)
+        and a.main_master = u.student_id(+)
+        and a.institute_id = i.id(+)
+        and valid_flag = '0'
+        and u.usertype = '1'		
+			 <if test="association_type != 'all'">
+   					 AND association_type=to_number(#{association_type})
+  			</if>
+  			 <if test="institute_id != 'all'">
+   					 AND a.institute_id=#{institute_id}
+  			</if>
+  			<if test="association_name != 'all'">
+   					 AND association_name like'%'||#{association_name}||'%'
+  			</if>
+</select>
+<update id="updateAssociationValidFlag"  parameterType="string">
+		update association_info set valid_flag=1 where main_master =#{student_id} and valid_flag=0
+</update>
+<update id="updateUserValidFlag"  parameterType="string">
+		update userinfo set validflag=0 where student_id =#{student_id} and usertype=1 and validflag=1
+</update>
+<!--所有有效协会名  -->
+<select id="getAllAssociationName"  resultType="java.util.HashMap">
+		  select association_name from association_info where valid_flag='1'
+</select>
+<!--所有协会名  -->
+<select id="getAllInstituteName"  resultType="java.util.HashMap">
+		   select institute_name  from institute_info
+</select>
+<!--数据  -->
+<select id="getAssociationBarData"  resultType="java.util.HashMap">
+  select institute_name, association_name, value
+    from association_info a,
+         institute_info i,
+         (select a.id, count(a.id) value
+            from userinfo u, association_info a
+           where a.id(+) = u.association_id
+             and usertype = '2'
+             and u.validflag = '0'
+           group by a.id) t
+  
+   where a.institute_id = i.id(+)
+     and t.id = a.id(+)
+</select>
+<!-- 待审批活动列表 -->
+<select id="getcheckActivityInfo" parameterType="map" resultType="java.util.HashMap">  	    	    
+  	    	select *
+				  from (SELECT A.*, ROWNUM RN
+				          FROM (select activity_id,
+				                       activity_theme,
+				                       to_char(activity_time, 'YYYY-MM-DD HH24:MI AM') activity_time,
+				                       activity_place,
+				                       activity_master_name,
+				                       activity_master_phone,
+				                 
+				                       activity_content from 
+				                       activity_info where activity_state ='0'
+				                       
+				                       	<if test="activity_theme!= 'all'">
+								   			 AND activity_theme like'%'||#{activity_theme}||'%'
+								  	    </if>			                       				                       
+				                        ) A
+				        <![CDATA[	   WHERE ROWNUM  <= to_number(#{page}) * to_number(#{limit})
+				         )
+				 WHERE RN >= (to_number(#{page})-1)*to_number(#{limit}) +1   ]]>
+</select>
+<!--  待审批活动总数 -->
+<select id="getcheckActivityCount" parameterType="map" resultType="String">
+	select count(*) from activity_info where activity_state ='0' 
+		<if test="activity_theme!= 'all'">
+		  	AND activity_theme like'%'||#{activity_theme}||'%'
+  	    </if>
+</select>
+<!--updateActivityState  -->
+<!-- 通过或 打回活动-->
+<update id="updateActivityState" parameterType="map" >
+			update activity_info	    set	
+		<if test="ACTIVITY_STATE==0">
+			ACTIVITY_STATE = '2'
+  	    </if>
+  	    <if test="ACTIVITY_STATE==1">
+		     ACTIVITY_STATE = '1'
+  	    </if>
+  	    where activity_id=#{activity_id}
+		
+</update>
+<!-- 浏览量前十的 活动 -->
+<select id="getActivityBarData"  resultType="java.util.HashMap">
+  			select *
+				  from (SELECT A.*, ROWNUM RN
+				          FROM (	
+						          select activity_theme name, click_count value
+								  from activity_info
+								 where activity_state = '1'
+								 order by click_count desc				        	          				          		                       				                       
+				                        ) A
+				        <![CDATA[	   WHERE ROWNUM  <= 10
+				         )
+				 WHERE RN >= 1  ]]>
+
+</select>
+
+<!-- 浏览量前十的 新闻 -->
+<select id="getNewsBarData"  resultType="java.util.HashMap">
+  			select *
+				  from (SELECT A.*, ROWNUM RN
+				          FROM (	
+						       select news_title name, click_count value
+							  from news_info
+							 where check_flag = 1
+							 order by click_count desc			        	          				          		                       				                       
+				                        ) A
+				        <![CDATA[	   WHERE ROWNUM  <= 10
+				         )
+				 WHERE RN >= 1  ]]>
+
+</select>
+<!--所有待审批新闻列表  -->
+<select id="getcheckedNewsInfo"  parameterType="map"   resultType="java.util.HashMap">
+			<!--        news_content, -->
+	SELECT * FROM  
+			(
+			SELECT A.*, ROWNUM RN  
+			FROM (select news_id,
+			       news_title,
+			       news_writer,
+			       to_char(report_time, 'YYYY-MM-DD HH24:MI:SS AM') report_time,
+			         (CASE
+			         WHEN news_type = '0' THEN
+			          '公告'
+			         WHEN news_type = '1' THEN
+			          '新闻'
+			       END) 
+			       news_type
+			  from news_info where check_flag=0
+			  	 <if test="news_type!=2">
+		 			and    news_type =to_number(#{news_type}) 
+  	   			 </if>
+  	   			 <if test="news_title!='all'">
+		 			and   news_title like'%'||#{news_title}||'%'
+  	   			 </if>			  			  
+		   <![CDATA[ 	  ) A  
+			WHERE ROWNUM <= to_number(#{page}) * to_number(#{limit}) 
+			)  
+			WHERE RN >=(to_number(#{page})-1)*to_number(#{limit}) +1  
+	 ]]>			
+</select>
+<!-- -所有待审批新闻总数 -->
+<select id="getcheckedNewsCount" parameterType="map"   resultType="String">
+select count(*) from news_info where check_flag=0
+			  	 <if test="news_type!=2">
+		 			and    news_type =to_number(#{news_type}) 
+  	   			 </if>
+  	   			 <if test="news_title!='all'">
+		 			and   news_title like'%'||#{news_title}||'%'
+  	   			 </if>	
+</select>
+<!-- 更新新闻标志 -->
+<update id="updateNewsCheckFlag"  parameterType="map">
+		update news_info set check_flag=to_number(#{check_flag}) where news_id=#{news_id}
+</update>
+<!-- 修改密码 -->
+<update id="updatePwd"  parameterType="map">
+		update userinfo set pwd=#{newpwd1} where student_id=#{student_id}
+		 and association_id=#{association_id} and pwd=#{oldpwd}		
+</update>
+<!-- 查询社团信息 -->
+<select id="getAssociationInfo"  parameterType="string" resultType="java.util.HashMap">
+select association_name,
+       to_char(START_TIME, 'YYYY-MM-DD HH24:MI:SS AM') startdate,
+       institute_name,
+       to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS AM') logintime
+  from association_info a, institute_info i
+ where a.institute_id = i.id(+)
+   and a.id = #{association_id}
+   and valid_flag = 1
+</select>
+</mapper>

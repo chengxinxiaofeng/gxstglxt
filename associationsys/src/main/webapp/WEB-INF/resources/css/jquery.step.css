@@ -1,0 +1,114 @@
+body,
+div,
+ul,
+li {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font-family: "微软雅黑";
+}
+
+.ui-step-wrap {
+	position: relative;
+}
+
+.ui-step-wrap .ui-step-bg,
+.ui-step-wrap .ui-step-progress {
+	height: 6px;
+	position: absolute;
+	top: 50px;
+	left: 0;
+}
+
+.ui-step-wrap .ui-step-bg {
+	width: 100%;
+	background: #ddd;
+}
+
+.ui-step-wrap .ui-step-progress {
+	width: 0;
+	background: #009688;
+}
+
+.ui-step-wrap .ui-step {
+	position: relative;
+	z-index: 1;
+	list-style: none;
+}
+
+.ui-step-wrap .ui-step:after {
+	content: '';
+	display: table;
+	clear: both;
+}
+
+.ui-step-wrap .ui-step .ui-step-item {
+	float: left;
+}
+
+.ui-step-wrap .ui-step .ui-step-item div {
+	text-align: center;
+	color: #625454;
+}
+
+.ui-step-wrap .ui-step .ui-step-item .ui-step-item-num {
+	margin-top: 18px;
+}
+
+.ui-step-wrap .ui-step .ui-step-item .ui-step-item-num span {
+	display: inline-block;
+	width: 26px;
+	height: 26px;
+	line-height: 26px;
+	border-radius: 50%;
+	background: #dad9d9;
+}
+
+.ui-step-wrap .ui-step .ui-step-item.active .ui-step-item-num span {
+	color: #fff;
+	background: #009688;
+}
+.my-step-item{
+	width: 100px;
+}
+
+/*button {
+	display: inline-block;
+	padding: 6px 12px;
+	font-size: 14px;
+	line-height: 1.42857143;
+	text-align: center;
+	cursor: pointer;
+	border: 1px solid transparent;
+	border-radius: 4px;
+	color: #fff;
+	background-color: #5bc0de;
+}
+			
+.main {
+	width: 1000px;
+	margin: 100px auto;
+}
+			
+#step {
+	margin-bottom: 60px;
+}
+			
+.btns {
+	float: left;
+}
+			
+.info {
+float: left;
+height: 34px;
+line-height: 34px;
+margin-left: 40px;
+font-size: 28px;
+font-weight: bold;
+color: #928787;
+}
+.info span {
+color: red;
+}*/

@@ -1,0 +1,99 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-3.2.xsd 
+		http://www.springframework.org/schema/mvc 
+		http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd 
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context-3.2.xsd 
+		http://www.springframework.org/schema/aop 
+		http://www.springframework.org/schema/aop/spring-aop-3.2.xsd 
+		http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx-3.2.xsd ">
+	<!-- 	vc:annotation-driven代替上边注解映射器和注解适配器配置
+	mvc:annotation-driven默认加载很多的参数绑定方法，
+	比如json转换解析器就默认加载了 -->
+	<mvc:annotation-driven></mvc:annotation-driven>
+	<!-- 可以扫描controller、service、...
+	这里让扫描controller，指定controller的包
+	 -->
+	<context:component-scan base-package="com.zyf.ssm.controller"></context:component-scan>
+	
+	<!-- 登录拦截 -->
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/admin/**"/>
+			<mvc:mapping path="/back/**"/>
+			<bean class="com.zyf.ssm.intercepter.LoginIntercepter "></bean>		
+		</mvc:interceptor>
+	</mvc:interceptors>
+		
+	<!--注解映射器 -->
+	<!-- <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping"/> -->
+	<!--注解适配器 -->
+<!-- 	<bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter"/> -->
+	<!-- 使用 mvc:annotation-driven代替上边注解映射器和注解适配器配置
+	mvc:annotation-driven默认加载很多的参数绑定方法，
+	比如json转换解析器就默认加载了，如果使用mvc:annotation-driven不用配置上边的RequestMappingHandlerMapping和RequestMappingHandlerAdapter
+	实际开发时使用mvc:annotation-driven
+	 -->
+<!-- 	<mvc:annotation-driven conversion-service="conversionService"></mvc:annotation-driven> -->
+	<!-- 视图解析器
+	解析jsp解析，默认使用jstl标签，classpath下的得有jstl的包
+	 -->
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<!-- 配置jsp路径的前缀 -->
+		<property name="prefix" value="/WEB-INF/jsp/"/>
+		<!-- 配置jsp路径的后缀 -->
+		<property name="suffix" value=".jsp"/>
+	</bean>
+	<!-- 对js文件不拦截 -->
+	<mvc:resources location="/WEB-INF/resources/js/" mapping="/resources/js/**" />
+	<!-- 对css文件不拦截 -->
+	<mvc:resources location="/WEB-INF/resources/css/" mapping="/resources/css/**" />
+	<!-- 对js/css文件不拦截 -->
+	<mvc:resources location="/WEB-INF/resources/layui/" mapping="/resources/layui/**" />
+	<!-- 对图片文件文件不拦截 -->
+	<mvc:resources location="/WEB-INF/resources/img/" mapping="/resources/img/**" />
+	<!-- UE编辑器依赖不拦截 -->
+	<mvc:resources location="/WEB-INF/resources/ueditor/" mapping="/resources/ueditor/**" />
+	<!-- 自定义参数绑定 -->
+<!-- 	<bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+		转换器
+		<property name="converters">
+			<list>
+				日期类型转换
+				<bean class="cn.itcast.ssm.controller.converter.CustomDateConverter"/>
+			</list>
+		</property>
+		
+	
+	</bean> -->
+	<!-- 上传文件 -->    
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">    
+    <property name="defaultEncoding" value="utf-8"/>    
+    <!-- 最大内存大小 -->    
+    <property name="maxInMemorySize" value="10240"/>    
+    <!-- 最大文件大小，-1为不限制大小 -->    
+    <property name="maxUploadSize" value="-1"/>    
+    </bean>    
+	<!--自定义消息转换器的编码,解决后台传输json回前台时，中文乱码问题-->  
+    <mvc:annotation-driven >  
+        <mvc:message-converters register-defaults="true">  
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter" >  
+                <property name = "supportedMediaTypes">  
+                    <list>  
+                        <value>application/json;charset=utf-8</value>  
+                        <value>text/html;charset=utf-8</value>  
+                        <!-- application 可以在任意 form 表单里面 enctype 属性默认找到 -->  
+                        <value>application/x-www-form-urlencoded</value>  
+                    </list>  
+                </property>  
+            </bean>  
+            <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter" ></bean>  
+        </mvc:message-converters>  
+    </mvc:annotation-driven>  
+</beans>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zyf.ssm.mapper.AssociationMapper" >
+<!-- 插入文件信息 -->
+<insert id="insertAssociationFile" parameterType="map">
+	insert into files_info(file_name,file_url,parent_id) values(#{file_name},#{file_url},#{parent_id})
+</insert>
+<select id="selectGivenAssociationCount" parameterType="string" resultType="int">
+ 	select count(*) from association_info where association_name=#{association_name}
+</select>
+<!--  已有社团且为社长-->
+<select id="selectGivenUserCount" parameterType="string" resultType="int">
+ 	select count(*) from userinfo where student_id=#{student_id} and usertype='1'
+</select>
+<!--  加入社团总数-->
+<select id="selectGivenUserCount2" parameterType="string" resultType="int">
+ 	select count(*) from userinfo where student_id=#{student_id}
+</select>
+<!-- 插入社团信息 -->
+<insert id="insertAssociationInfo" parameterType="map">
+	insert into association_info(association_name,institute_id,main_master,association_type,id)
+	 values(#{association_name},#{institute_id},#{student_id},#{association_type},#{association_id})
+</insert>
+<!-- 申请社团插入社长信息 -->
+<insert id="insertUserInfo" parameterType="map">
+	insert into userinfo(student_id,realname,pwd,usertype,phone,email,gender,association_id,institute_id)
+	 values(#{student_id},#{realname},#{student_id},'1',#{phone},#{email},#{gender},#{association_id},#{institute_id})
+</insert>
+<!-- 更新文件为有效 -->
+<update id="updateValidFlag" parameterType="string" >
+	update files_info set validflag ='1' where parent_id =#{ssociation_id}
+</update>
+<!-- 查询全部社团信息 -->
+<select id="getAllAssociationInfo"  parameterType="map" resultType="java.util.HashMap">
+		  			SELECT * FROM  
+			(  
+			SELECT A.*, ROWNUM RN  
+			FROM (
+					
+					select association_name,
+		       (case association_type
+		         when 0 then
+		          '学术社团'
+		         when 1 then
+		          '非学术社团'
+		       end) association_type,
+		       nvl(file_name, 0) file_name,
+		       nvl(file_url, 0) file_url,
+		       to_char(start_time,'yyyy-MM-dd') start_time,institute_name,a.id association_id
+		       
+		  from association_info a, files_info f, institute_info i
+		 where a.id = f.parent_id(+)
+		   and a.institute_id = i.id(+) and valid_flag='1'			
+			 <if test="association_type != 'all'">
+   					 AND association_type=to_number(#{association_type})
+  			</if>
+  			 <if test="institute_id != 'all'">
+   					 AND institute_id=#{institute_id}
+  			</if>
+  			<if test="association_name != 'all'">
+   					 AND association_name like'%'||#{association_name}||'%'
+  			</if>
+			<![CDATA[	) A  
+			WHERE ROWNUM <= to_number(#{page}) * to_number(#{limit}) 
+			)  
+			WHERE RN >=(to_number(#{page})-1)*to_number(#{limit}) +1  
+			 ]]>
+</select>
+<!-- 查询数量 -->
+<select id="getAllAssociationCount"   parameterType="map"  resultType="String">
+select count(*) 
+  from association_info a, files_info f, institute_info i
+		 where a.id = f.parent_id(+)
+		   and a.institute_id = i.id(+)	 and valid_flag='1'			
+			 <if test="association_type != 'all'">
+   					 AND association_type=to_number(#{association_type})
+  			</if>
+  			 <if test="institute_id != 'all'">
+   					 AND institute_id=#{institute_id}
+  			</if>
+  			<if test="association_name != 'all'">
+   					 AND association_name like'%'||#{association_name}||'%'
+  			</if>
+</select>
+<!-- 更新用户标志 -->
+<update id="changeUserFlag"   parameterType="map">
+		update userinfo set validflag=1 where association_id=#{association_id} and  student_id=#{student_id}
+</update>
+</mapper>

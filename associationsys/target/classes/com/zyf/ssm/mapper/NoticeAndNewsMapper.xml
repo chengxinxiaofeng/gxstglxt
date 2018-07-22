@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zyf.ssm.mapper.NoticeAndNewsMapper" >
+<!--分页查询公告列表  -->
+<select id="getAllNoticeData" parameterType="string" resultType="java.util.HashMap">
+		  <![CDATA[	   select *
+    from (SELECT A.*, ROWNUM RN
+            FROM (select news_id,
+                         news_title,
+                         to_char(report_time, 'YYYY-MM-DD HH24:MI AM') report_time                 
+                    from news_info
+                   where check_flag = '1'
+                     and news_type = '0'
+                   order by report_time desc) A
+           where ROWNUM <= to_number(#{page})*12)
+   WHERE RN >= to_number(#{page}-1)*12 +1 
+       	]]>	 
+	
+</select>
+<!--所有公告总数  -->
+<select id="getAllNoticeCount"  resultType="String">
+		 select count(*)  from news_info where check_flag = '1' and news_type = '0'
+</select>
+
+<!--分页查询新闻列表  -->
+<select id="getAllNewsData" parameterType="string" resultType="java.util.HashMap">
+		  <![CDATA[	   select *
+    from (SELECT A.*, ROWNUM RN
+            FROM (select news_id,
+                         news_title,
+                         to_char(report_time, 'YYYY-MM-DD HH24:MI AM') report_time                 
+                    from news_info
+                   where check_flag = '1'
+                     and news_type = '1'
+                   order by report_time desc) A
+           where ROWNUM <= to_number(#{page})*12)
+   WHERE RN >= to_number(#{page}-1)*12 +1 
+       	]]>	 
+	
+</select>
+<!--所有新闻总数  -->
+<select id="getAllNewsCount"  resultType="String">
+	 select count(*)  from news_info where check_flag = '1' and news_type = '1'
+</select>
+<!--查询给定的公告信息  -->
+<select id="getGivenNoticeData" parameterType="string" resultMap="resultjcm">
+	select news_title,
+       news_writer,
+       to_char(report_time, 'YYYY-MM-DD HH24:MI AM') report_time,
+       click_count,
+       news_content
+	  from news_info
+	 where news_id = #{news_id}
+	  and check_flag = '1'
+</select>
+<select id="getGivenNoticeData2" parameterType="string" resultMap="resultjcm">
+	select news_title,
+       news_writer,
+       to_char(report_time, 'YYYY-MM-DD HH24:MI AM') report_time,
+       click_count,
+       news_content
+	  from news_info
+	 where news_id = #{news_id}
+	  and check_flag = '0'
+</select>
+	<!-- 新闻&公告映射Map -->
+ <resultMap type="java.util.Map" id="resultjcm">
+  <result property="NEWS_TITLE" column="NEWS_TITLE"  javaType="string" jdbcType="VARCHAR"/>
+  <result property="NEWS_CONTENT" column="NEWS_CONTENT" javaType="string" jdbcType="CLOB"/>
+  <result property="NEWS_WRITER" column="NEWS_WRITER"  javaType="string" jdbcType="VARCHAR"/>
+  <result property="REPORT_TIME" column="REPORT_TIME"  javaType="string" jdbcType="VARCHAR"/>
+  <result property="CLICK_COUNT" column="CLICK_COUNT"  javaType="java.math.BigDecimal" jdbcType="NUMERIC"/>  
+
+ </resultMap>
+ <!-- 查询公告的附件信息 -->
+ <select id="getNoticeFileInfo"  parameterType="string" resultType="java.util.HashMap">
+		select file_name,file_url from  FILES_INFO where parent_id = #{news_id} and validflag='1'
+</select>
+<!-- 新闻浏览连+1 -->
+<update id="updateNewsCount" parameterType="string" >
+	  <![CDATA[	update news_info set click_count=click_count+1 where news_id=#{news_id}	]]>	 
+</update>
+
+</mapper>

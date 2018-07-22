@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zyf.ssm.mapper.ActivityMapper" >
+<!--获取活动列表  -->
+<select id="getAllActivityPreviewData" parameterType="string" resultType="java.util.HashMap">
+		  <![CDATA[	   select *
+    from (SELECT A.*, ROWNUM RN
+            FROM (select activity_id, activity_theme, 
+            to_char(activity_time, 'YYYY-MM-DD HH24:MI AM') activity_time  , activity_place
+			  from activity_info
+			 where activity_state = '1'
+			   and activity_time > sysdate
+			 order by activity_time asc
+			) A
+           where ROWNUM <= to_number(#{page})*12)
+   WHERE RN >= to_number(#{page}-1)*12 +1 
+       	]]>	 
+	
+</select>
+<!-- 近期活动总数 -->
+<select id="getActiviyPreviewCount"  resultType="String">
+ <![CDATA[ select count(*) from activity_info where activity_state = '1' and activity_time > sysdate ]]>	
+</select>
+
+
+<!--获取历史活动列表  -->
+<select id="getAllActivityHistoryData" parameterType="string" resultType="java.util.HashMap">
+		  <![CDATA[	   select *
+    from (SELECT A.*, ROWNUM RN
+            FROM (select activity_id, activity_theme, 
+            to_char(activity_time, 'YYYY-MM-DD HH24:MI AM') activity_time  , activity_place
+			  from activity_info
+			 where activity_state = '1'
+			   and activity_time <= sysdate
+			 order by activity_time asc
+			) A
+           where ROWNUM <= to_number(#{page})*12)
+   WHERE RN >= to_number(#{page}-1)*12 +1 
+       	]]>	 
+	
+</select>
+<!-- 历史活动总数 -->
+<select id="getActiviyHistoryCount"  resultType="String">
+	 <![CDATA[ select count(*) from activity_info where activity_state = '1' and activity_time <= sysdate ]]>	
+</select>
+
+
+
+<!-- 活动浏览量+1 -->
+<update id="updateActivityCount" parameterType="string" >
+	  <![CDATA[	update activity_info set click_count=click_count+1 where activity_id=#{activity_id}	]]>	 
+</update>
+<!-- 指定活动具体信息 -->
+<select id="getGivenActivityData"   parameterType="string" resultType="java.util.HashMap">
+			 <![CDATA[ 
+			select activity_id,
+			       activity_theme,
+			       association_name,
+			       to_char(activity_time, 'YYYY-MM-DD HH24:MI AM') activity_time,
+			       activity_place, activity_content,
+			       activity_master_name,
+			       click_count,
+			       activity_master_phone
+			  from activity_info,
+			       (select association_name
+			          from association_info
+			         where id = (select association_id
+			                       from activity_info
+			                      where activity_id = #{activity_id}))
+			 where activity_id = #{activity_id} and activity_state = '1'
+			  ]]>	
+</select>
+</mapper>

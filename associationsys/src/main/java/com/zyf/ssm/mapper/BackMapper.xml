@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zyf.ssm.mapper.BackMapper" >
+<!--通过审核人员信息-->
+<select id="getCommonUserInfo"  parameterType="map" resultType="java.util.HashMap">
+		   <![CDATA[ 	SELECT * FROM  
+      (  
+    SELECT A.STUDENT_ID,A.REALNAME, A.PHONE,A.EMAIL,nvl(A.IMGURL,0) IMGURL,association_id,to_char(registertime,'yyyy-MM-dd') registertime, 
+  	 gender,institute_name,institute_id, ROWNUM RN  
+		FROM (SELECT * FROM userinfo u,institute_info i   where u.ASSOCIATION_ID = #{association_id} and validflag='0' and usertype=2 and  u.institute_id  = i.id) A  
+			WHERE ROWNUM <= to_number(#{page})*to_number(#{limit})
+			)  
+			WHERE RN >= (to_number(#{page})-1)*to_number(#{limit}) +1 
+		 ]]>
+</select>
+<!--未通过审核人员信息-->
+<select id="getVerifyCommonUserInfo"  parameterType="map" resultType="java.util.HashMap">
+		   <![CDATA[ 	SELECT * FROM  
+      (  
+    SELECT A.STUDENT_ID,A.REALNAME, A.PHONE,A.EMAIL,nvl(A.IMGURL,0) IMGURL,association_id,to_char(registertime,'yyyy-MM-dd') registertime, 
+  	 gender,institute_name,institute_id, ROWNUM RN  
+		FROM (SELECT * FROM userinfo u,institute_info i   where u.ASSOCIATION_ID = #{association_id} and validflag='1' and usertype=2 and  u.institute_id  = i.id) A  
+			WHERE ROWNUM <= to_number(#{page})*to_number(#{limit})
+			)  
+			WHERE RN >= (to_number(#{page})-1)*to_number(#{limit}) +1 
+		 ]]>
+</select>
+<!-- 通过审核社团会员总数 -->
+<select id="getCommonUserCount" parameterType="map" resultType="String">
+				   <![CDATA[ 	SELECT count(*) FROM  
+      (  
+    SELECT A.STUDENT_ID,A.REALNAME, A.PHONE,A.EMAIL,nvl(A.IMGURL,0) IMGURL,association_id,to_char(registertime,'yyyy-MM-dd') registertime, 
+  	( CASE WHEN gender=0 THEN '男'
+        WHEN gender=1 THEN '女'  END) gender,institute_name, ROWNUM RN  
+		FROM (SELECT * FROM userinfo u,institute_info i   where u.ASSOCIATION_ID = #{association_id}  and validflag='0' and usertype=2 and  u.institute_id  = i.id) A  
+			)  
+		
+		 ]]>
+</select>
+<!-- 未通过审核社团会员总数 -->
+<select id="getVerifyCommonUserCount" parameterType="map" resultType="String">
+				   <![CDATA[ 	SELECT count(*) FROM  
+      (  
+    SELECT A.STUDENT_ID,A.REALNAME, A.PHONE,A.EMAIL,nvl(A.IMGURL,0) IMGURL,association_id,to_char(registertime,'yyyy-MM-dd') registertime, 
+  	( CASE WHEN gender=0 THEN '男'
+        WHEN gender=1 THEN '女'  END) gender,institute_name, ROWNUM RN  
+		FROM (SELECT * FROM userinfo u,institute_info i   where u.ASSOCIATION_ID = #{association_id}  and validflag='1' and usertype=2 and  u.institute_id  = i.id) A  
+			)  
+		
+		 ]]>
+</select>
+<!-- 通过审核查询 -->
+<select id="getGivenUser"  parameterType="map" resultType="java.util.HashMap">
+		   <![CDATA[ SELECT *
+  FROM (SELECT A.STUDENT_ID,
+               A.REALNAME,
+               A.PHONE,
+               A.EMAIL,
+               nvl(A.IMGURL, 0) IMGURL ,
+               association_id,
+               INSTITUTE_ID,
+               to_char(registertime, 'yyyy-MM-dd') registertime,
+           	   gender,
+               institute_name,
+               ROWNUM RN
+          FROM (SELECT *
+                  FROM userinfo u,
+                       institute_info i where (u.ASSOCIATION_ID = #{association_id} and u.institute_id = i.id and validflag='0' and usertype=2) and (realname = #{searchWord} or student_id =  #{searchWord} or email =  #{searchWord} or phone =  #{searchWord})
+                
+                ) A 
+			WHERE ROWNUM <= to_number(#{page})*to_number(#{limit})
+			)  
+			WHERE RN >= (to_number(#{page})-1)*to_number(#{limit}) +1 
+		 ]]>
+</select>
+<!-- 未通过审核搜索框查询 -->
+<select id="getVerifyGivenUser"  parameterType="map" resultType="java.util.HashMap">
+		   <![CDATA[ SELECT *
+  FROM (SELECT A.STUDENT_ID,
+               A.REALNAME,
+               A.PHONE,
+               A.EMAIL,
+               nvl(A.IMGURL, 0) IMGURL ,
+               association_id,
+               INSTITUTE_ID,
+               to_char(registertime, 'yyyy-MM-dd') registertime,
+           	   gender,
+               institute_name,
+               ROWNUM RN
+          FROM (SELECT *
+                  FROM userinfo u,
+                       institute_info i where (u.ASSOCIATION_ID = #{association_id} and u.institute_id = i.id and validflag='1' and usertype=2) and (realname = #{searchWord} or student_id =  #{searchWord} or email =  #{searchWord} or phone =  #{searchWord})
+                
+                ) A 
+			WHERE ROWNUM <= to_number(#{page})*to_number(#{limit})
+			)  
+			WHERE RN >= (to_number(#{page})-1)*to_number(#{limit}) +1 
+		 ]]>
+</select>
+<!--通过审核搜索框数量查询  -->
+<select id="getGivenUserCount"  parameterType="map" resultType="String">
+				   <![CDATA[ SELECT count(*)
+  FROM (SELECT A.STUDENT_ID,
+               A.REALNAME,
+               A.PHONE,
+               A.EMAIL,
+               nvl(A.IMGURL, 0) IMGURL ,
+               association_id,
+               INSTITUTE_ID,
+               to_char(registertime, 'yyyy-MM-dd') registertime,
+               (CASE
+                 WHEN gender = 0 THEN
+                  '男'
+                 WHEN gender = 1 THEN
+                  '女'
+               END) gender,
+               institute_name,
+               ROWNUM RN
+          FROM (SELECT *
+                  FROM userinfo u,
+                       institute_info i where (u.ASSOCIATION_ID = #{association_id} and u.institute_id = i.id and validflag='0' and usertype=2) and (realname = #{searchWord} or student_id =  #{searchWord} or email =  #{searchWord} or phone =  #{searchWord})               
+                ) A 
+			)  
+		 ]]>
+</select>
+<!--未通过审核数量查询  -->
+<select id="getVerifyGivenUserCount"  parameterType="map" resultType="String">
+				   <![CDATA[ SELECT count(*)
+  FROM (SELECT A.STUDENT_ID,
+               A.REALNAME,
+               A.PHONE,
+               A.EMAIL,
+               nvl(A.IMGURL, 0) IMGURL ,
+               association_id,
+               INSTITUTE_ID,
+               to_char(registertime, 'yyyy-MM-dd') registertime,
+               (CASE
+                 WHEN gender = 0 THEN
+                  '男'
+                 WHEN gender = 1 THEN
+                  '女'
+               END) gender,
+               institute_name,
+               ROWNUM RN
+          FROM (SELECT *
+                  FROM userinfo u,
+                       institute_info i where (u.ASSOCIATION_ID = #{association_id} and u.institute_id = i.id and validflag='1' and usertype=2) and (realname = #{searchWord} or student_id =  #{searchWord} or email =  #{searchWord} or phone =  #{searchWord})               
+                ) A 
+			)  
+		 ]]>
+</select>
+<!-- 物资查询开始 -->
+<!-- 社团物资查询 -->
+<select id="getGoodsInfo"  parameterType="map" resultType="java.util.HashMap">
+		<![CDATA[			SELECT * FROM  
+			(  
+			SELECT A.*, ROWNUM RN  
+			FROM (select GOODS_ID,GOODS_NAME,GOODS_COUNT,ASSOCIATION_ID,to_char(LAST_EDIT_TIME,'YYYY-MM-DD HH24:MI:SS AM') LAST_EDIT_TIME from goods where association_id=#{association_id}) A  
+			WHERE ROWNUM <= to_number(#{page}) * to_number(#{limit}) 
+			)  
+			WHERE RN >=(to_number(#{page})-1)*to_number(#{limit}) +1  
+			 ]]>
+</select>
+<!--社团物资数量查询，分页-->
+<select id="getGoodsCount"  parameterType="map" resultType="String">
+		select count(*) from goods where association_id=#{association_id}
+</select>
+<!-- 社团 物资搜索框查询-->
+<select id="getGivenGoods"  parameterType="map" resultType="java.util.HashMap">
+		<![CDATA[			SELECT * FROM  
+			(  
+			SELECT A.*, ROWNUM RN  
+			FROM (select GOODS_ID,GOODS_NAME,GOODS_COUNT,ASSOCIATION_ID,to_char(LAST_EDIT_TIME,'YYYY-MM-DD HH24:MI:SS AM') LAST_EDIT_TIME from goods where association_id=#{association_id} and goods_name=#{searchWord}) A  
+			WHERE ROWNUM <= to_number(#{page}) * to_number(#{limit}) 
+			)  
+			WHERE RN >=(to_number(#{page})-1)*to_number(#{limit}) +1  
+			 ]]>
+</select>
+<!-- 搜索框物资数量查询 -->
+<select id="getGivenGoodsCount"  parameterType="map" resultType="String">
+		select count(*) from goods where association_id=#{association_id} and goods_name=#{searchWord}
+</select>
+<!-- 物资查询结束 -->
+<delete id="delCommonUser" parameterType="map">
+  delete from userinfo  where student_id = #{student_id} and association_id = #{association_id}
+</delete>
+<delete id="delBatchCommonUser" parameterType="map">
+  delete from userinfo  where student_id = #{STUDENT_ID} and association_id = #{ASSOCIATION_ID}
+</delete>
+<!--校验学号  -->
+<select id="checkStudetId"  parameterType="map" resultType="string">
+		select count(*) from USERINFO where student_id = #{student_id} and association_id = #{association_id}
+</select>
+<!-- 新增用户下拉选 -->
+<select id="getSelectData"  resultType="java.util.HashMap">
+	select id,institute_name from INSTITUTE_INFO t
+</select>
+<!--添加新会员-->
+<insert id="addCommonUser" parameterType="map">
+	insert into userinfo (student_id,pwd,association_id,imgurl,realname,gender,phone,email,institute_id) values(#{student_id},#{pwd},#{association_id},#{imgurl},#{realname},#{gender},#{phone},#{email},#{institute_id})
+</insert>
+<!-- 编辑用户 -->
+<update id="editCommonUser" parameterType="map" >
+	update userinfo set student_id =#{student_id},imgurl=#{imgurl},realname=#{realname},gender=#{gender},phone=#{phone},email=#{email},institute_id=#{institute_id} where student_id=#{student_id} and association_id=#{association_id}
+</update>
+
+<!-- 更新validflag-->
+<update id="updateValidFlag" parameterType="map" >
+	update userinfo set validflag ='0' where student_id=#{student_id} and association_id=#{association_id}
+</update>
+<!--  批量更新-->
+<update id="updateBatchValidFlag" parameterType="map" >
+	update userinfo set validflag ='0' where student_id=#{STUDENT_ID} and association_id=#{ASSOCIATION_ID}
+</update>
+<!--柱状图  -->
+<select id="getCommonUserBarData"  parameterType="string" resultType="java.util.HashMap">
+	select i.institute_name name , count(*) value from userinfo u,institute_info i where association_id =#{association_id} and u.validflag=0 and  u.institute_id  = i.id group by i.institute_name<!--  order by value desc -->
+</select>
+<!-- 单个删除物资 -->
+<delete id="delGoods" parameterType="map">
+  delete from goods  where goods_id = #{goods_id}
+</delete>
+<!-- 批量删除物资-->
+<delete id="delBatchGoods" parameterType="map">
+  delete from goods  where goods_id = #{GOODS_ID}
+</delete>
+<!-- 物资录入 -->
+<insert id="addGoods" parameterType="map">
+	insert into goods (goods_name,goods_count,association_id) values(#{goods_name},#{goods_count},#{association_id})
+</insert>
+<!-- 编辑物资 -->
+<update id="editGoods" parameterType="map" >
+	update goods set goods_name =#{goods_name},goods_count = to_number(#{goods_count}),last_edit_time=sysdate where goods_id=#{goods_id}
+</update>
+
+ <resultMap type="java.util.Map" id="resultjcm">
+  <result property="NEWS_ID" column="NEWS_ID"  javaType="string" jdbcType="VARCHAR"/>
+  <result property="NEWS_TITLE" column="NEWS_TITLE"  javaType="string" jdbcType="VARCHAR"/>
+  <result property="NEWS_CONTENT" column="NEWS_CONTENT" javaType="string" jdbcType="CLOB"/>
+  <result property="NEWS_WRITER" column="NEWS_WRITER"  javaType="string" jdbcType="VARCHAR"/>
+  <result property="NEWS_TYPE" column="NEWS_TYPE"  javaType="string" jdbcType="VARCHAR"/>
+  <result property="REPORT_TIME" column="REPORT_TIME"  javaType="string" jdbcType="VARCHAR"/>
+  <result property="CLICK_COUNT" column="CLICK_COUNT"  javaType="java.math.BigDecimal" jdbcType="NUMERIC"/>
+  <result property="CHECK_FLAG" column="CHECK_FLAG"  javaType="string" jdbcType="VARCHAR"/>
+  <result property="ASSOCIATION_ID" column="ASSOCIATION_ID"  javaType="string" jdbcType="VARCHAR"/>  
+    
+    <!-- 
+  <result property="FLD_DATE" column="FLD_DATE" javaType="java.sql.Date" jdbcType="DATE"/>
+  <result property="FLD_INTEGER" column="FLD_INTEGER"  javaType="int" jdbcType="INTEGER"/>
+  <result property="FLD_DOUBLE" column="FLD_DOUBLE"  javaType="double" jdbcType="DOUBLE"/>
+  <result property="FLD_LONG" column="FLD_LONG"  javaType="long" jdbcType="INTEGER"/>
+  <result property="FLD_CHAR" column="FLD_CHAR"  javaType="string" jdbcType="CHAR"/>
+  <result property="FLD_BLOB" column="FLD_BLOB"  javaType="[B" jdbcType="BLOB" />
+  <result property="FLD_CLOB" column="FLD_CLOB"  javaType="string" jdbcType="CLOB"/>
+  <result property="FLD_FLOAT" column="FLD_FLOAT"  javaType="float" jdbcType="FLOAT"/>
+  <result property="FLD_TIMESTAMP" column="FLD_TIMESTAMP"  javaType="java.sql.Timestamp" jdbcType="TIMESTAMP"/> -->
+ </resultMap>
+<!--所有新新闻信息列表  -->
+<select id="getAllNewsInfo"  parameterType="map"   resultMap="resultjcm">
+			<!--        news_content, -->
+	   <![CDATA[ SELECT * FROM  
+			(  
+			SELECT A.*, ROWNUM RN  
+			FROM (select news_id,
+			       news_title,
+			       news_writer,
+			       news_content,
+			       to_char(report_time, 'YYYY-MM-DD HH24:MI:SS AM') report_time,
+			       click_count,
+			       (CASE
+			         WHEN check_flag = '0' THEN
+			          '待审批'
+			         WHEN check_flag = '1' THEN
+			          '审批通过'
+			         else
+			          '审批打回'
+			       END) check_flag,
+			         (CASE
+			         WHEN news_type = '0' THEN
+			          '公告'
+			         WHEN news_type = '1' THEN
+			          '新闻'
+			       END) 
+			       news_type,
+			       association_id
+			  from news_info where  association_id=#{association_id}) A  
+			WHERE ROWNUM <= to_number(#{page}) * to_number(#{limit}) 
+			)  
+			WHERE RN >=(to_number(#{page})-1)*to_number(#{limit}) +1  
+	 ]]>			
+</select>
+<!--所有新新闻信息总数  -->
+<select id="getAllNewsCount"  parameterType="map" resultType="String">
+	select count(*) from news_info where  association_id=#{association_id}
+</select>
+
+<!-- 新闻页下拉选选中后的查询 -->
+<select id="getSelectNewsInfo"  parameterType="map"   resultMap="resultjcm">
+
+	   <![CDATA[ SELECT * FROM  
+			(  
+			SELECT A.*, ROWNUM RN  
+			FROM (select news_id,
+			       news_title,
+			       news_content,
+			       news_writer,
+			       to_char(report_time, 'YYYY-MM-DD HH24:MI:SS AM'),
+			       click_count,
+			       (CASE
+			         WHEN check_flag = '0' THEN
+			          '待审批'
+			         WHEN check_flag = '1' THEN
+			          '审批通过'
+			         else
+			          '审批打回'
+			       END) check_flag,
+			       (CASE
+			         WHEN news_type = '0' THEN
+			          '公告'
+			         WHEN news_type = '1' THEN
+			          '新闻'
+			       END) 
+			       news_type,
+			       association_id
+			  from news_info where  association_id=#{association_id} and check_flag=to_number(#{check_flag}) ) A  
+			WHERE ROWNUM <= to_number(#{page}) * to_number(#{limit}) 
+			)  
+			WHERE RN >=(to_number(#{page})-1)*to_number(#{limit}) +1  
+	 ]]>			
+</select>
+<!--   新闻页下拉选选中后数量查询-->
+<select id="getSelectNewsCount"  parameterType="map" resultType="String">
+	select count(*) from news_info where  association_id=#{association_id} and check_flag=to_number(#{check_flag})
+</select>
+<!-- 新闻搜索框查询1 -->
+<select id="searchNewInfo1"  parameterType="map"  resultMap="resultjcm">
+
+	   <![CDATA[ SELECT * FROM  
+			(  
+			SELECT A.*, ROWNUM RN  
+			FROM (select news_id,
+			       news_title,
+			       news_content,
+			       news_writer,
+			       to_char(report_time, 'YYYY-MM-DD HH24:MI:SS AM'),
+			       click_count,
+			       (CASE
+			         WHEN check_flag = '0' THEN
+			          '待审批'
+			         WHEN check_flag = '1' THEN
+			          '审批通过'
+			         else
+			          '审批打回'
+			       END) check_flag,
+			       (CASE
+			         WHEN news_type = '0' THEN
+			          '公告'
+			         WHEN news_type = '1' THEN
+			          '新闻'
+			       END) 
+			       news_type,
+			       association_id
+			  from news_info where  association_id=#{association_id} and news_title like '%'||#{news_title}||'%' and check_flag=to_number(#{check_flag}) ) A  
+			WHERE ROWNUM <= to_number(#{page}) * to_number(#{limit}) 
+			)  
+			WHERE RN >=(to_number(#{page})-1)*to_number(#{limit}) +1  
+	 ]]>			
+</select>
+<!-- - 新闻搜索框数量查询1 -->
+<select id="searchNewCount1"  parameterType="map" resultType="String">
+	select count(*) from news_info where  association_id=#{association_id} and news_title like '%'||#{news_title}||'%' and check_flag=to_number(#{check_flag})
+</select>
+
+
+<!-- 新闻搜索框查询 2-->
+<select id="searchNewInfo2"  parameterType="map"  resultMap="resultjcm">
+
+	   <![CDATA[ SELECT * FROM  
+			(  
+			SELECT A.*, ROWNUM RN  
+			FROM (select news_id,
+			       news_title,
+			       news_content,
+			       news_writer,
+			       to_char(report_time, 'YYYY-MM-DD HH24:MI:SS AM'),
+			       click_count,
+			       (CASE
+			         WHEN check_flag = '0' THEN
+			          '待审批'
+			         WHEN check_flag = '1' THEN
+			          '审批通过'
+			         else
+			          '审批打回'
+			       END) check_flag,
+			       (CASE
+			         WHEN news_type = '0' THEN
+			          '公告'
+			         WHEN news_type = '1' THEN
+			          '新闻'
+			       END) 
+			       news_type,
+			       association_id
+			  from news_info where  association_id=#{association_id} and news_title like '%'||#{news_title}||'%') A  
+			WHERE ROWNUM <= to_number(#{page}) * to_number(#{limit}) 
+			)  
+			WHERE RN >=(to_number(#{page})-1)*to_number(#{limit}) +1  
+	 ]]>			
+</select>
+<!-- - 新闻搜索框数量查询2 -->
+<select id="searchNewCount2"  parameterType="map" resultType="String">
+	select count(*) from news_info where  association_id=#{association_id} and news_title like '%'||#{news_title}||'%'
+</select>
+<!-- 插入文件信息 -->
+<insert id="insertFiles" parameterType="map">
+	insert into files_info(file_name,file_url,parent_id) values(#{file_name},#{file_url},#{parent_id})
+</insert>
+<!-- 插入新闻信息  上传了附件时-->
+<insert id="reportNews1" parameterType="map">
+	insert into news_info (news_id,news_title,news_writer,association_id,news_content,news_type) values(#{news_id},#{news_title},#{news_writer},#{association_id},#{news_content},#{news_type})
+</insert>
+<!-- 插入新闻信息  没有上传附件时-->
+<insert id="reportNews2" parameterType="map">
+	insert into news_info (news_title,news_writer,association_id,news_content,news_type) values(#{news_title},#{news_writer},#{association_id},#{news_content},#{news_type})
+</insert>
+<!-- 更改文件有效标识为1 （有效）-->
+<update id="updateFilesFlag" parameterType="string">
+	update files_info  set validflag='1' where parent_id = #{parent_id}
+</update>
+<!-- 删除新闻 -->
+<delete id="delNews" parameterType="string">
+  delete from news_info  where news_id = #{news_id}
+</delete>
+<!-- 删除新闻对应的文件信息 -->
+<delete id="delFiles" parameterType="string">
+  delete from files_info  where parent_id = #{news_id}
+</delete>
+<!--删除活动  -->
+<delete id="delActivity" parameterType="string">
+  delete from activity_info  where activity_id = #{activity_id}
+</delete>
+<!--查询新闻对应的文件信息，用于删除在磁盘中的文件  -->
+<select id="selectFiles"  parameterType="string"  resultType="java.util.HashMap">
+	select * from files_info where  parent_id =#{news_id}
+</select>
+<!-- 插入活动 -->
+<insert id="addActivity" parameterType="map">
+	insert into activity_info (activity_theme,activity_time,activity_place,activity_master_name,activity_master_phone,activity_content,association_id) values(#{activity_theme},to_date(#{activity_time},'yyyy-MM-dd HH24:MI'),#{activity_place},#{activity_master_name},#{activity_master_phone},#{activity_content},#{association_id})
+</insert>
+<!--查询所有活动信息  -->
+<select id="getAllActivityInfo"  parameterType="map" resultType="java.util.HashMap">
+
+	  <![CDATA[			select *
+				  from (SELECT A.*, ROWNUM RN
+				          FROM (select activity_id,
+				                       activity_theme,
+				                       to_char(activity_time, 'YYYY-MM-DD HH24:MI AM') activity_time,
+				                       activity_place,
+				                       activity_master_name,
+				                       activity_master_phone,
+				                       (CASE
+				                         WHEN activity_state = '0' THEN
+				                          '待审批'
+				                         WHEN activity_state = '1' THEN
+				                          '审批通过'
+				                         else
+				                          '审批打回'
+				                       END) activity_state,
+				                       activity_content,click_count
+				                
+				                  from activity_info
+				                 where association_id = #{association_id}) A
+				         WHERE ROWNUM  <= to_number(#{page}) * to_number(#{limit})
+				         )
+				 WHERE RN >= (to_number(#{page})-1)*to_number(#{limit}) +1  
+		]]>	
+</select>
+<!--所有活动数量  -->
+<select id="getAllActivityCount"  parameterType="map" resultType="String">
+	select count(*)  from activity_info where  association_id = #{association_id}
+</select>
+
+<!--活动下拉选查询活动 -->
+<select id="getSelectActivityInfo"  parameterType="map" resultType="java.util.HashMap">
+
+	  		select *
+				  from (SELECT A.*, ROWNUM RN
+				          FROM (select activity_id,
+				                       activity_theme,
+				                       to_char(activity_time, 'YYYY-MM-DD HH24:MI AM') activity_time,
+				                       activity_place,
+				                       activity_master_name,
+				                       activity_master_phone,
+				                       (CASE
+				                         WHEN activity_state = '0' THEN
+				                          '待审批'
+				                         WHEN activity_state = '1' THEN
+				                          '审批通过'
+				                         else
+				                          '审批打回'
+				                       END) activity_state,
+				                       activity_content,click_count
+				                
+				                  from activity_info
+				                 where association_id = #{association_id}
+				                   <if test="activity_state != 'all'">
+								   					 AND activity_state = #{activity_state}
+								  	</if>
+								  	 <if test="activity_theme != 'all'">
+								   					 AND activity_theme  like'%'||#{activity_theme}||'%'
+								  	</if>
+				                 
+		<![CDATA[			                  ) A
+				         WHERE ROWNUM  <= to_number(#{page}) * to_number(#{limit})
+				         )
+				 WHERE RN >= (to_number(#{page})-1)*to_number(#{limit}) +1  
+		]]>	
+</select>
+<!--活动下拉选查询 数量-->
+<select id="getSelectActivityCount"  parameterType="map" resultType="String">
+	select count(*)  from activity_info where  
+	association_id = #{association_id} 
+	   					
+    <if test="activity_state != 'all'">
+   					 AND activity_state = #{activity_state}
+  	</if>
+  	 <if test="activity_theme != 'all'">
+   					 AND activity_theme like'%'||#{activity_theme}||'%'
+  	</if>
+</select>
+</mapper>

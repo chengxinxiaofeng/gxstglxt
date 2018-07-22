@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zyf.ssm.mapper.LoginAndRegisterMapper" >
+<!--找回密码校验身份 -->
+<select id="findRegisterPhone" parameterType="map" resultType="java.util.HashMap">
+	select STUDENT_ID,
+       REALNAME,
+       PWD,
+       (case usertype
+         when 0 then
+          '超级用户'
+         when 1 then
+          '社长'
+         when 2 then
+          '普通用户'
+       end) usertype,
+       phone,
+       email,
+       imgurl,
+       association_id,
+       (case gender
+         when 0 then
+          '男'
+         when 1 then
+          '女'
+       end) gender
+  from userinfo where phone = #{phoneNumber}    <![CDATA[  and usertype!=2
+	 and validflag=0
+	  ]]>
+</select>
+<!--找回密码  -->
+<update id="updateFindPwd" parameterType="map" >
+	update userinfo set pwd = #{newpwd1} where phone = #{findPhone} and validflag=0 
+	 <![CDATA[ and usertype!=2  ]]>
+</update>
+<!-- 账号密码登录 -->
+<select id="userNameLogin" parameterType="map" resultType="java.util.HashMap">
+	select STUDENT_ID,
+       REALNAME,
+       PWD,
+       (case usertype
+         when 0 then
+          '超级用户'
+         when 1 then
+          '社长'
+         when 2 then
+          '普通用户'
+       end) usertype,
+       phone,
+       email,
+       imgurl,
+       association_id,
+       (case gender
+         when 0 then
+          '男'
+         when 1 then
+          '女'
+       end) gender
+  from userinfo  where (phone=#{username} or student_id=#{username} or email=#{username})
+	   <![CDATA[  and usertype!=2 and validflag=0
+	 and pwd = #{userpassword}
+	  ]]>
+</select>
+<!--  QQ号码登录  -->
+<select id="qqLogin" parameterType="map" resultType="java.util.HashMap">
+	select STUDENT_ID,
+       REALNAME,
+       PWD,
+       (case usertype
+         when 0 then
+          '超级用户'
+         when 1 then
+          '社长'
+         when 2 then
+          '普通用户'
+       end) usertype,
+       phone,
+       email,
+       imgurl,
+       association_id,
+       (case gender
+         when 0 then
+          '男'
+         when 1 then
+          '女'
+       end) gender
+  from userinfo  where openid=#{openid}    <![CDATA[  and usertype!=2
+	and validflag=0
+	  ]]>
+</select>
+<!--  短信登录-->
+<select id="shortMsgLogin" parameterType="string" resultType="java.util.HashMap">
+	select STUDENT_ID,
+       REALNAME,
+       PWD,
+       (case usertype
+         when 0 then
+          '超级用户'
+         when 1 then
+          '社长'
+         when 2 then
+          '普通用户'
+       end) usertype,
+       phone,
+       email,
+       imgurl,
+       association_id,
+       (case gender
+         when 0 then
+          '男'
+         when 1 then
+          '女'
+       end) gender
+  from userinfo where phone = #{phoneNumber}    <![CDATA[  and usertype!=2
+	and validflag=0
+	  ]]>
+</select>
+</mapper>
